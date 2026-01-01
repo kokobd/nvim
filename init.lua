@@ -115,6 +115,7 @@ local plugins = {
 	-- Telescope command menu
 	{ "nvim-telescope/telescope.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+	{ "nvim-telescope/telescope-live-grep-args.nvim", version = "^1.0.0" },
 
 	-- TreeSitter
 	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
@@ -165,7 +166,21 @@ require("nvim-tree").setup({
 		width = 30,
 	},
 }) -- the tree file browser panel
-require("telescope").setup() -- command menu
+local lga_actions = require("telescope-live-grep-args.actions")
+require("telescope").setup({
+	extensions = {
+		live_grep_args = {
+			auto_quoting = true,
+			mappings = {
+				i = {
+					["<C-k>"] = lga_actions.quote_prompt(),
+					["<C-space>"] = lga_actions.to_fuzzy_refine,
+				},
+			},
+		},
+	},
+}) -- command menu
+require("telescope").load_extension("live_grep_args")
 require("bufferline").setup({})
 
 vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>")
@@ -240,7 +255,9 @@ require("conform").setup({
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
-vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live grep" })
+vim.keymap.set("n", "<leader>fg", function()
+	require("telescope").extensions.live_grep_args.live_grep_args()
+end, { desc = "Telescope live grep with args" })
 vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Telescope buffers" })
 vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope help tags" })
 
