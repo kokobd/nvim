@@ -206,13 +206,12 @@ vim.opt.foldlevel = 99
 require("conform").setup({
 	log_level = vim.log.levels.DEBUG,
 	default_format_opts = {
-
-		lsp_format = "fallback",
 		async = true,
+		lsp_format = "never",
 	},
 	format_on_save = {
 		timeout_ms = 10000,
-		lsp_format = "fallback",
+		lsp_format = "never",
 	},
 	formatters_by_ft = {
 		lua = { "stylua" },
@@ -220,6 +219,7 @@ require("conform").setup({
 		nix = { "nixfmt" },
 		haskell = { "ormolu" },
 		ledger = { "hledger-fmt" },
+		cabal = { "cabal_fmt" },
 	},
 	formatters = {
 		["hledger-fmt"] = {
