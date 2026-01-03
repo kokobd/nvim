@@ -24,7 +24,7 @@ if vim.g.neovide then
 	vim.keymap.set("n", "<D-v>", '"+P') -- Paste normal mode
 	vim.keymap.set("v", "<D-v>", '"+P') -- Paste visual mode
 	vim.keymap.set("c", "<D-v>", "<C-R>+") -- Paste command mode
-	vim.keymap.set("i", "<D-v>", '<C-R>+') -- Paste insert mode
+	vim.keymap.set("i", "<D-v>", "<C-R>+") -- Paste insert mode
 end
 
 -- Display settings
@@ -231,10 +231,16 @@ require("conform").setup({
 		async = true,
 		lsp_format = "never",
 	},
-	format_on_save = {
-		timeout_ms = 10000,
-		lsp_format = "never",
-	},
+	format_on_save = function(bufnr)
+		-- Disable format_on_save when variable is set
+		if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+			return
+		end
+		return {
+			timeout_ms = 10000,
+			lsp_format = "never",
+		}
+	end,
 	formatters_by_ft = {
 		lua = { "stylua" },
 		json = { "prettier" },
@@ -242,6 +248,7 @@ require("conform").setup({
 		haskell = { "ormolu" },
 		ledger = { "hledger-fmt" },
 		cabal = { "cabal_fmt" },
+		yaml = { "yamlfmt" },
 	},
 	formatters = {
 		["hledger-fmt"] = {
@@ -252,6 +259,12 @@ require("conform").setup({
 		},
 	},
 })
+
+-- Toggle format on save
+vim.api.nvim_create_user_command("FormatToggle", function()
+	vim.g.disable_autoformat = not vim.g.disable_autoformat
+	print("Format on save: " .. (vim.g.disable_autoformat and "disabled" or "enabled"))
+end, {})
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
