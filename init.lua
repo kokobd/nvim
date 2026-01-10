@@ -36,6 +36,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.wrap = false
 vim.opt.sidescrolloff = 8
 vim.opt.scrolloff = 8
+vim.opt.colorcolumn = "80,120"
 
 -- Title
 vim.opt.title = true
@@ -165,6 +166,10 @@ require("nvim-tree").setup({
 	view = {
 		width = 30,
 	},
+	filters = {
+		dotfiles = false,
+		git_ignored = false,
+	},
 }) -- the tree file browser panel
 local lga_actions = require("telescope-live-grep-args.actions")
 require("telescope").setup({
@@ -179,7 +184,13 @@ require("telescope").setup({
 			},
 		},
 	},
-}) -- command menu
+	pickers = {
+		find_files = {
+			-- `hidden = true` will still show the inside of `.git/` as it's not `.gitignore`d.
+			find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+		},
+	},
+})
 require("telescope").load_extension("live_grep_args")
 require("bufferline").setup({})
 
@@ -295,3 +306,18 @@ local function close_other_buffers()
 end
 
 vim.keymap.set("n", "<leader>bc", close_other_buffers, { desc = "Close other buffers" })
+
+-- Copy file path to clipboard
+vim.keymap.set("n", "<leader>yp", function()
+	local path = vim.fn.expand("%:p")
+	vim.fn.setreg('"', path) -- default register
+	vim.fn.setreg("+", path) -- system clipboard
+	print("Copied to clipboard: " .. path)
+end, { desc = "Copy file path to clipboard" })
+
+-- Nushell
+vim.api.nvim_create_user_command("Nu", function()
+	vim.cmd("enew")
+	vim.fn.termopen("nu")
+	vim.cmd("startinsert")
+end, {})
