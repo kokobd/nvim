@@ -4,6 +4,8 @@ vim.opt.number = true
 vim.opt.mouse = "a"
 vim.opt.showmode = false
 vim.opt.spelllang = "en_us"
+vim.o.modeline = false
+vim.o.modelines = 0
 
 vim.o.guifont = "JetBrainsMono Nerd Font Mono:h12"
 
@@ -167,7 +169,12 @@ require("nvim-tree").setup({
 		ignore_list = {},
 	},
 	view = {
-		width = 30,
+		width = 40,
+	},
+	actions = {
+		open_file = {
+			resize_window = false,
+		},
 	},
 	filters = {
 		dotfiles = false,
@@ -303,7 +310,8 @@ local function close_other_buffers()
 	-- Delete non-visible buffers
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.api.nvim_buf_is_loaded(buf) and not visible_buffers[buf] then
-			vim.api.nvim_buf_delete(buf, { force = false })
+			local buftype = vim.bo[buf].buftype
+			vim.api.nvim_buf_delete(buf, { force = buftype == "terminal" })
 		end
 	end
 end
@@ -317,10 +325,3 @@ vim.keymap.set("n", "<leader>yp", function()
 	vim.fn.setreg("+", path) -- system clipboard
 	print("Copied to clipboard: " .. path)
 end, { desc = "Copy file path to clipboard" })
-
--- Nushell
-vim.api.nvim_create_user_command("Nu", function()
-	vim.cmd("enew")
-	vim.fn.termopen("nu")
-	vim.cmd("startinsert")
-end, {})
